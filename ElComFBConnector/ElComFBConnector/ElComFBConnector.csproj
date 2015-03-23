@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="Constantes.cs" />
     <Compile Include="FBApiConnector.cs" />
+    <Compile Include="FBConnector.cs" />
     <Compile Include="IFBApiConnector.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
