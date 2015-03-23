@@ -14,6 +14,6 @@ namespace ElComFBConnector
     {
         [OperationContract]
         [WebGet]
-        string GetPagesLikes(string pageId);
+        string GetPagesInfo(string pageId);
     }
 }

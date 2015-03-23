@@ -14,6 +14,6 @@ namespace ElComFBConnector
 
         public const string comercioFBId = "71263708835";
 
-        public const string ApiBaseUrl = "https://graph.facebook.com/oauth/access_token";
+        public const string ApiBaseUrl = "https://graph.facebook.com/";
     }
 }
