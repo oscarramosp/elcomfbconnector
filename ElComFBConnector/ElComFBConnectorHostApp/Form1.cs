@@ -14,7 +14,10 @@ namespace ElComFBConnectorHostApp
 {
     public partial class Form1 : Form
     {
-        private WebServiceHost host;
+        private ServiceHost host;
+
+        //http://localhost:8080/FBApiConnector/GetIdInfoRaw?Id=71263708835
+        //http://localhost:8080/FBApiConnector/GetPostsRaw?Id=71263708835&sinceDate=&untilDate=
 
         public Form1()
         {

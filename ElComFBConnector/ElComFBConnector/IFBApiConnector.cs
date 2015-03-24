@@ -20,5 +20,9 @@ namespace ElComFBConnector
         [OperationContract]
         [WebGet]
         Stream GetIdInfoRaw(string Id);
+
+        [OperationContract]
+        [WebGet]
+        Stream GetPostsRaw(string Id, string sinceDate, string untilDate);
     }
 }

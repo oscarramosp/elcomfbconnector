@@ -293,6 +293,138 @@ namespace ElComFBConnector
             return sb.ToString();
         }
 
+        public string getPosts(string pageId, string sinceDate, string untilDate)
+        {
+            string accessToken = generarAccessToken();
+            StringBuilder sb = new StringBuilder();
+
+            if (!string.IsNullOrEmpty(accessToken))
+            {
+                string delimiter = ConfigurationManager.AppSettings["delimiter"].ToString();
+                string cabecera = generarCabeceraData(new string[] { "id", "story", "link", "type", "object_id", "created_time", "updated_time", "shares", "like_count", "comment_count" }, delimiter);
+                sb.AppendLine(cabecera);
+
+                //Posts públicos de la página
+                string strPagePostsRequest = Constantes.ApiBaseUrl + pageId + "/posts/?";
+                bool blnValidacion = false;
+
+                if (!string.IsNullOrEmpty(sinceDate))
+                {
+                    strPagePostsRequest = strPagePostsRequest + "since=" + sinceDate;
+                    blnValidacion = true;
+                }
+
+                if (!string.IsNullOrEmpty(untilDate))
+                {
+                    strPagePostsRequest = strPagePostsRequest + ((!blnValidacion) ? "until=" + untilDate : "&until=" + untilDate);
+                    blnValidacion = true;
+                }
+
+                strPagePostsRequest = strPagePostsRequest + ((!blnValidacion) ? "access_token=" + accessToken : "&access_token=" + accessToken);
+                string strPagePostsResponse = RequestResponse(strPagePostsRequest);
+                var jsonPostsInfo = JObject.Parse(strPagePostsResponse);
+
+                string data = string.Empty;
+                if (jsonPostsInfo["data"] != null)
+                {
+                    foreach (JObject jsonPostInfo in jsonPostsInfo["data"].ToArray())
+                    {
+                        data = string.Empty;
+
+                        data += (jsonPostInfo["id"] != null ? jsonPostInfo["id"].ToString() : string.Empty);
+                        data += delimiter + (jsonPostInfo["story"] != null ? jsonPostInfo["story"].ToString() : string.Empty);
+                        data += delimiter + (jsonPostInfo["link"] != null ? jsonPostInfo["link"].ToString() : string.Empty);
+                        data += delimiter + (jsonPostInfo["type"] != null ? jsonPostInfo["type"].ToString() : string.Empty);
+                        data += delimiter + (jsonPostInfo["object_id"] != null ? jsonPostInfo["object_id"].ToString() : string.Empty);
+                        data += delimiter + (jsonPostInfo["created_time"] != null ? jsonPostInfo["created_time"].ToString() : string.Empty);
+                        data += delimiter + (jsonPostInfo["updated_time"] != null ? jsonPostInfo["updated_time"].ToString() : string.Empty);
+                        data += delimiter + ((jsonPostInfo["shares"] != null && (jsonPostInfo["shares"])["count"] != null) ? (jsonPostInfo["shares"])["count"].ToString() : string.Empty);
+                        data += delimiter + ((jsonPostInfo["likes"] != null && (jsonPostInfo["likes"])["data"] != null) ? (getCantidadLikes(jsonPostInfo["id"].ToString(), accessToken, (JObject)jsonPostInfo["likes"])) : string.Empty);
+                        data += delimiter + string.Empty;
+
+                        //(jsonPostInfo["likes"])["data"]
+                        //jsonPostInfo["likes"] != null && (jsonPostInfo["likes"])["data"] != null
+
+                        sb.AppendLine(data);
+                    }
+                }
+            }
+            else
+            {
+                sb.Clear();
+                sb.AppendLine("ERROR");
+                sb.AppendLine("Ocurrió un error al generar el token de acceso. Token de acceso: " + accessToken);
+            }
+
+            return sb.ToString();
+        }
+
+        private string getCantidadLikes(string objectID,string accessToken, JObject likeCollection)
+        {
+            string resultado = string.Empty;
+            Int32 cantidadLikes = -1;
+
+            cantidadLikes += likeCollection["data"].ToArray().Length;
+
+            string after = string.Empty;
+            after = ((likeCollection["paging"])["cursors"])["after"].ToString();
+
+            string strPagePostLikesRequest = Constantes.ApiBaseUrl + objectID + "/likes/?after=" + after + "&access_token=" + accessToken;
+            string strPagePostLikesResponse = RequestResponse(strPagePostLikesRequest);
+            var jsonPagePostLikesInfo = JObject.Parse(strPagePostLikesResponse);
+
+            while (after != null && !string.IsNullOrEmpty(after))
+            {
+                if (jsonPagePostLikesInfo["data"] != null)
+                {
+                    cantidadLikes += jsonPagePostLikesInfo["data"].ToArray().Length;
+                    if (jsonPagePostLikesInfo["paging"] != null &&
+                        (jsonPagePostLikesInfo["paging"])["cursors"] != null &&
+                            ((jsonPagePostLikesInfo["paging"])["cursors"])["after"] != null)
+                    {
+                        after = ((jsonPagePostLikesInfo["paging"])["cursors"])["after"].ToString();
+                        strPagePostLikesRequest = Constantes.ApiBaseUrl + objectID + "/likes/?after=" + after + "&access_token=" + accessToken;
+                        strPagePostLikesResponse = RequestResponse(strPagePostLikesRequest);
+                        jsonPagePostLikesInfo = JObject.Parse(strPagePostLikesResponse);
+                    }
+                    else
+                    {
+                        after = string.Empty;
+                    }
+                }
+            }
+
+            string before = string.Empty;
+            before = ((likeCollection["paging"])["cursors"])["before"].ToString(); ;
+
+            strPagePostLikesRequest = Constantes.ApiBaseUrl + objectID + "/likes/?before=" + before + "&access_token=" + accessToken;
+            strPagePostLikesResponse = RequestResponse(strPagePostLikesRequest);
+            jsonPagePostLikesInfo = JObject.Parse(strPagePostLikesResponse);
+
+            while (before != null && !string.IsNullOrEmpty(before))
+            {
+                if (jsonPagePostLikesInfo["data"] != null)
+                {
+                    cantidadLikes += jsonPagePostLikesInfo["data"].ToArray().Length;
+                    if (jsonPagePostLikesInfo["paging"] != null &&
+                        (jsonPagePostLikesInfo["paging"])["cursors"] != null &&
+                            ((jsonPagePostLikesInfo["paging"])["cursors"])["before"] != null)
+                    {
+                        before = ((jsonPagePostLikesInfo["paging"])["cursors"])["before"].ToString();
+                        strPagePostLikesRequest = Constantes.ApiBaseUrl + objectID + "/likes/?before=" + before + "&access_token=" + accessToken;
+                        strPagePostLikesResponse = RequestResponse(strPagePostLikesRequest);
+                        jsonPagePostLikesInfo = JObject.Parse(strPagePostLikesResponse);
+                    }
+                    else
+                    {
+                        before = string.Empty;
+                    }
+                }
+            }
+
+            return cantidadLikes.ToString();
+        }
+
         private string generarCabeceraData(string[] cabecera, string delimiter)
         {
             string cabeceraFinal = string.Empty;

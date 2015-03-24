@@ -16,6 +16,6 @@ namespace ElComFBConnector
 
 
         //Datos para pruebas
-        public const string comercioFBId = "71263708835";
+        //public const string comercioFBId = "71263708835";
     }
 }
