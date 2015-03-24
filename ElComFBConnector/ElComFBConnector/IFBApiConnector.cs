@@ -5,6 +5,7 @@ using System.Runtime.Serialization;
 using System.ServiceModel;
 using System.ServiceModel.Web;
 using System.Text;
+using System.IO;
 
 namespace ElComFBConnector
 {
@@ -14,6 +15,10 @@ namespace ElComFBConnector
     {
         [OperationContract]
         [WebGet]
-        string GetPagesInfo(string pageId);
+        string GetIdInfo(string Id);
+
+        [OperationContract]
+        [WebGet]
+        Stream GetIdInfoRaw(string Id);
     }
 }

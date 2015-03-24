@@ -2,6 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Net;
+using System.IO;
+using Newtonsoft.Json.Linq;
+using System.Configuration;
 
 namespace ElComFBConnector
 {
@@ -199,7 +203,27 @@ namespace ElComFBConnector
             Console.ReadLine();
         }
 
-        public static string RequestResponse(string pUrl)
+        
+    }
+     */
+    public class FBConnector
+    {
+        private string generarAccessToken()
+        {
+            string AppId = ConfigurationManager.AppSettings["AppId"].ToString();
+            string AppSecret = ConfigurationManager.AppSettings["AppSecret"].ToString();
+            string strGenerateToken = Constantes.ApiBaseUrl + "oauth/access_token?" + string.Format("client_id={0}&client_secret={1}&grant_type=client_credentials", AppId, AppSecret);
+            string strResponseToken = RequestResponse(strGenerateToken);
+            string accessToken = string.Empty;
+            string[] arrResponseToken = strResponseToken.Split('=');
+            if (!String.IsNullOrEmpty(strResponseToken) && arrResponseToken.Length > 1)
+            {
+                accessToken = arrResponseToken[1];
+            }
+            return accessToken;
+        }
+
+        private string RequestResponse(string pUrl)
         {
             HttpWebRequest webRequest = System.Net.WebRequest.Create(pUrl) as HttpWebRequest;
             webRequest.Method = "GET";
@@ -231,17 +255,57 @@ namespace ElComFBConnector
 
             return responseData;
         }
-    }
-     */
-    public class FBConnector
-    {
+
         public string getIDInfo(string pageId)
         {
-            string pageInfo = string.Empty;
+            string accessToken = generarAccessToken();
+            StringBuilder sb = new StringBuilder();
 
+            if (!string.IsNullOrEmpty(accessToken))
+            {
+                string delimiter = ConfigurationManager.AppSettings["delimiter"].ToString();
+                string cabecera = generarCabeceraData(new string[] { "id", "name", "category", "link", "birthday", "gender", "likes", "talking_about_count" }, delimiter);
+                sb.AppendLine(cabecera);
 
+                //Info de la página
+                string strPageInfoRequest = Constantes.ApiBaseUrl + pageId + "?access_token=" + accessToken;
+                string strPageInfoResponse = RequestResponse(strPageInfoRequest);
+                var jsonPageInfo = JObject.Parse(strPageInfoResponse);
 
-            return pageInfo;
+                string data = (jsonPageInfo["id"] != null ? jsonPageInfo["id"].ToString() : string.Empty) +
+                              delimiter + (jsonPageInfo["name"] != null ? jsonPageInfo["name"].ToString() : string.Empty) +
+                              delimiter + (jsonPageInfo["category"] != null ? jsonPageInfo["category"].ToString() : string.Empty) +
+                              delimiter + (jsonPageInfo["link"] != null ? jsonPageInfo["link"].ToString() : string.Empty) +
+                              delimiter + (jsonPageInfo["birthday"] != null ? jsonPageInfo["birthday"].ToString() : string.Empty) +
+                              delimiter + (jsonPageInfo["gender"] != null ? jsonPageInfo["gender"].ToString() : string.Empty) +
+                              delimiter + (jsonPageInfo["likes"] != null ? jsonPageInfo["likes"].ToString() : string.Empty) +
+                              delimiter + (jsonPageInfo["talking_about_count"] != null ? jsonPageInfo["talking_about_count"].ToString() : string.Empty);
+                sb.AppendLine(data);
+
+            }
+            else
+            {
+                sb.Clear();
+                sb.AppendLine("ERROR");
+                sb.AppendLine("Ocurrió un error al generar el token de acceso. Token de acceso: " + accessToken);
+            }
+
+            return sb.ToString();
+        }
+
+        private string generarCabeceraData(string[] cabecera, string delimiter)
+        {
+            string cabeceraFinal = string.Empty;
+
+            if (cabecera != null && cabecera.Length > 1)
+            {
+                foreach (string item in cabecera)
+                {
+                    cabeceraFinal = (string.IsNullOrEmpty(cabeceraFinal)) ? item : cabeceraFinal + delimiter + item;
+                }
+            }
+
+            return cabeceraFinal;
         }
     }
 }

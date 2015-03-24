@@ -7,13 +7,15 @@ namespace ElComFBConnector
 {
     public class Constantes
     {
-        public const string AppID = "884427038267146";
-        public const string AppSecret = "0a60d73f092c689208699724f8b0933d";
+        //Fijos, a migrar al app config
+        //public const string AppID = "884427038267146";
+        //public const string AppSecret = "0a60d73f092c689208699724f8b0933d";
+        //public const string delimiter = "|";
 
-        public const string test = "/v2.2/{user-id}/likes/{page-id}";
+        public const string ApiBaseUrl = "https://graph.facebook.com/v2.2/";
 
+
+        //Datos para pruebas
         public const string comercioFBId = "71263708835";
-
-        public const string ApiBaseUrl = "https://graph.facebook.com/";
     }
 }
