@@ -15,6 +15,9 @@ namespace ElComFBConnector
         public const string ApiBaseUrl = "https://graph.facebook.com/v2.2/";
         public const string ApiBaseUrlUnversioned = "https://graph.facebook.com/";
 
+        public const string Likes = "likes";
+        public const string Comments = "comments";
+
 
         //Datos para pruebas
         //public const string comercioFBId = "71263708835";
