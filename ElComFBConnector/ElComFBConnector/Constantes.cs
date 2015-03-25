@@ -13,6 +13,7 @@ namespace ElComFBConnector
         //public const string delimiter = "|";
 
         public const string ApiBaseUrl = "https://graph.facebook.com/v2.2/";
+        public const string ApiBaseUrlUnversioned = "https://graph.facebook.com/";
 
 
         //Datos para pruebas

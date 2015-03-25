@@ -258,104 +258,139 @@ namespace ElComFBConnector
 
         public string getIDInfo(string pageId)
         {
-            string accessToken = generarAccessToken();
             StringBuilder sb = new StringBuilder();
-
-            if (!string.IsNullOrEmpty(accessToken))
+            try
             {
-                string delimiter = ConfigurationManager.AppSettings["delimiter"].ToString();
-                string cabecera = generarCabeceraData(new string[] { "id", "name", "category", "link", "birthday", "gender", "likes", "talking_about_count" }, delimiter);
-                sb.AppendLine(cabecera);
+                string accessToken = generarAccessToken();
 
-                //Info de la página
-                string strPageInfoRequest = Constantes.ApiBaseUrl + pageId + "?access_token=" + accessToken;
-                string strPageInfoResponse = RequestResponse(strPageInfoRequest);
-                var jsonPageInfo = JObject.Parse(strPageInfoResponse);
+                if (!string.IsNullOrEmpty(accessToken))
+                {
+                    string delimiter = ConfigurationManager.AppSettings["delimiter"].ToString();
+                    string cabecera = generarCabeceraData(new string[] { "id", "name", "category", "link", "birthday", "gender", "likes", "talking_about_count", "first_name", "last_name", "locale", "username", "location_city", "location_country" }, delimiter);
+                    sb.AppendLine(cabecera);
 
-                string data = (jsonPageInfo["id"] != null ? jsonPageInfo["id"].ToString() : string.Empty) +
-                              delimiter + (jsonPageInfo["name"] != null ? jsonPageInfo["name"].ToString() : string.Empty) +
-                              delimiter + (jsonPageInfo["category"] != null ? jsonPageInfo["category"].ToString() : string.Empty) +
-                              delimiter + (jsonPageInfo["link"] != null ? jsonPageInfo["link"].ToString() : string.Empty) +
-                              delimiter + (jsonPageInfo["birthday"] != null ? jsonPageInfo["birthday"].ToString() : string.Empty) +
-                              delimiter + (jsonPageInfo["gender"] != null ? jsonPageInfo["gender"].ToString() : string.Empty) +
-                              delimiter + (jsonPageInfo["likes"] != null ? jsonPageInfo["likes"].ToString() : string.Empty) +
-                              delimiter + (jsonPageInfo["talking_about_count"] != null ? jsonPageInfo["talking_about_count"].ToString() : string.Empty);
-                sb.AppendLine(data);
+                    //Info de la página
+                    string strPageInfoRequest = Constantes.ApiBaseUrl + pageId + "?access_token=" + accessToken;
+                    string strPageInfoResponse = RequestResponse(strPageInfoRequest);
+                    var jsonPageInfo = JObject.Parse(strPageInfoResponse);
 
+                    //Info de la página - sin seguridad
+                    string strPageInfoRequestUnsec = Constantes.ApiBaseUrlUnversioned + pageId;
+                    string strPageInfoResponseUnsec = RequestResponse(strPageInfoRequestUnsec);
+                    var jsonPageInfoUnsec = JObject.Parse(strPageInfoResponseUnsec);
+
+                    string data = (jsonPageInfo["id"] != null ? jsonPageInfo["id"].ToString() : string.Empty) +
+                                  delimiter + (jsonPageInfo["name"] != null ? jsonPageInfo["name"].ToString() : string.Empty) +
+                                  delimiter + (jsonPageInfo["category"] != null ? jsonPageInfo["category"].ToString() : string.Empty) +
+                                  delimiter + (jsonPageInfo["link"] != null ? jsonPageInfo["link"].ToString() : string.Empty) +
+                                  delimiter + (jsonPageInfo["birthday"] != null ? jsonPageInfo["birthday"].ToString() : string.Empty) +
+                                  delimiter + (jsonPageInfo["gender"] != null ? jsonPageInfo["gender"].ToString() : (jsonPageInfoUnsec["gender"] != null ? jsonPageInfoUnsec["gender"].ToString() : string.Empty)) +
+                                  delimiter + (jsonPageInfo["likes"] != null ? jsonPageInfo["likes"].ToString() : string.Empty) +
+                                  delimiter + (jsonPageInfo["talking_about_count"] != null ? jsonPageInfo["talking_about_count"].ToString() : string.Empty) +
+
+                                  delimiter + (jsonPageInfoUnsec["first_name"] != null ? jsonPageInfoUnsec["first_name"].ToString() : string.Empty) +
+                                  delimiter + (jsonPageInfoUnsec["last_name"] != null ? jsonPageInfoUnsec["last_name"].ToString() : string.Empty) +
+                                  delimiter + (jsonPageInfoUnsec["locale"] != null ? jsonPageInfoUnsec["locale"].ToString() : string.Empty) +
+                                  delimiter + (jsonPageInfoUnsec["username"] != null ? jsonPageInfoUnsec["username"].ToString() : string.Empty) +
+
+                                  delimiter + ((jsonPageInfo["location"] != null && (jsonPageInfo["location"])["city"] != null) ? (jsonPageInfo["location"])["city"].ToString() : string.Empty) +
+                                  delimiter + ((jsonPageInfo["location"] != null && (jsonPageInfo["location"])["country"] != null) ? (jsonPageInfo["location"])["country"].ToString() : string.Empty);
+                    sb.AppendLine(data);
+
+                }
+                else
+                {
+                    sb.Clear();
+                    sb.AppendLine("ERROR");
+                    sb.AppendLine("Ocurrió un error al generar el token de acceso. Token de acceso: " + accessToken);
+                }
             }
-            else
+            catch (Exception ex)
             {
                 sb.Clear();
                 sb.AppendLine("ERROR");
-                sb.AppendLine("Ocurrió un error al generar el token de acceso. Token de acceso: " + accessToken);
+                sb.AppendLine("Ocurrió un error al invocar el servicio.");
+                sb.AppendLine("Error");
+                sb.AppendLine("----------------------------------------");
+                sb.AppendLine(ex.Message);
             }
-
             return sb.ToString();
         }
 
         public string getPosts(string pageId, string sinceDate, string untilDate)
         {
-            string accessToken = generarAccessToken();
             StringBuilder sb = new StringBuilder();
-
-            if (!string.IsNullOrEmpty(accessToken))
+            try
             {
-                string delimiter = ConfigurationManager.AppSettings["delimiter"].ToString();
-                string cabecera = generarCabeceraData(new string[] { "id", "story", "link", "type", "object_id", "created_time", "updated_time", "shares", "like_count", "comment_count" }, delimiter);
-                sb.AppendLine(cabecera);
+                string accessToken = generarAccessToken();
 
-                //Posts públicos de la página
-                string strPagePostsRequest = Constantes.ApiBaseUrl + pageId + "/posts/?";
-                bool blnValidacion = false;
-
-                if (!string.IsNullOrEmpty(sinceDate))
+                if (!string.IsNullOrEmpty(accessToken))
                 {
-                    strPagePostsRequest = strPagePostsRequest + "since=" + sinceDate;
-                    blnValidacion = true;
-                }
+                    string delimiter = ConfigurationManager.AppSettings["delimiter"].ToString();
+                    string cabecera = generarCabeceraData(new string[] { "id", "story", "link", "type", "object_id", "created_time", "updated_time", "shares", "like_count", "comment_count" }, delimiter);
+                    sb.AppendLine(cabecera);
 
-                if (!string.IsNullOrEmpty(untilDate))
-                {
-                    strPagePostsRequest = strPagePostsRequest + ((!blnValidacion) ? "until=" + untilDate : "&until=" + untilDate);
-                    blnValidacion = true;
-                }
+                    //Posts públicos de la página
+                    string strPagePostsRequest = Constantes.ApiBaseUrl + pageId + "/posts/?";
+                    bool blnValidacion = false;
 
-                strPagePostsRequest = strPagePostsRequest + ((!blnValidacion) ? "access_token=" + accessToken : "&access_token=" + accessToken);
-                string strPagePostsResponse = RequestResponse(strPagePostsRequest);
-                var jsonPostsInfo = JObject.Parse(strPagePostsResponse);
-
-                string data = string.Empty;
-                if (jsonPostsInfo["data"] != null)
-                {
-                    foreach (JObject jsonPostInfo in jsonPostsInfo["data"].ToArray())
+                    if (!string.IsNullOrEmpty(sinceDate))
                     {
-                        data = string.Empty;
+                        strPagePostsRequest = strPagePostsRequest + "since=" + sinceDate;
+                        blnValidacion = true;
+                    }
 
-                        data += (jsonPostInfo["id"] != null ? jsonPostInfo["id"].ToString() : string.Empty);
-                        data += delimiter + (jsonPostInfo["story"] != null ? jsonPostInfo["story"].ToString() : string.Empty);
-                        data += delimiter + (jsonPostInfo["link"] != null ? jsonPostInfo["link"].ToString() : string.Empty);
-                        data += delimiter + (jsonPostInfo["type"] != null ? jsonPostInfo["type"].ToString() : string.Empty);
-                        data += delimiter + (jsonPostInfo["object_id"] != null ? jsonPostInfo["object_id"].ToString() : string.Empty);
-                        data += delimiter + (jsonPostInfo["created_time"] != null ? jsonPostInfo["created_time"].ToString() : string.Empty);
-                        data += delimiter + (jsonPostInfo["updated_time"] != null ? jsonPostInfo["updated_time"].ToString() : string.Empty);
-                        data += delimiter + ((jsonPostInfo["shares"] != null && (jsonPostInfo["shares"])["count"] != null) ? (jsonPostInfo["shares"])["count"].ToString() : string.Empty);
-                        data += delimiter + ((jsonPostInfo["likes"] != null && (jsonPostInfo["likes"])["data"] != null) ? (getCantidadLikes(jsonPostInfo["id"].ToString(), accessToken, (JObject)jsonPostInfo["likes"])) : string.Empty);
-                        data += delimiter + string.Empty;
+                    if (!string.IsNullOrEmpty(untilDate))
+                    {
+                        strPagePostsRequest = strPagePostsRequest + ((!blnValidacion) ? "until=" + untilDate : "&until=" + untilDate);
+                        blnValidacion = true;
+                    }
 
-                        //(jsonPostInfo["likes"])["data"]
-                        //jsonPostInfo["likes"] != null && (jsonPostInfo["likes"])["data"] != null
+                    strPagePostsRequest = strPagePostsRequest + ((!blnValidacion) ? "access_token=" + accessToken : "&access_token=" + accessToken);
+                    string strPagePostsResponse = RequestResponse(strPagePostsRequest);
+                    var jsonPostsInfo = JObject.Parse(strPagePostsResponse);
 
-                        sb.AppendLine(data);
+                    string data = string.Empty;
+                    if (jsonPostsInfo["data"] != null)
+                    {
+                        foreach (JObject jsonPostInfo in jsonPostsInfo["data"].ToArray())
+                        {
+                            data = string.Empty;
+
+                            data += (jsonPostInfo["id"] != null ? jsonPostInfo["id"].ToString() : string.Empty);
+                            data += delimiter + (jsonPostInfo["story"] != null ? jsonPostInfo["story"].ToString() : string.Empty);
+                            data += delimiter + (jsonPostInfo["link"] != null ? jsonPostInfo["link"].ToString() : string.Empty);
+                            data += delimiter + (jsonPostInfo["type"] != null ? jsonPostInfo["type"].ToString() : string.Empty);
+                            data += delimiter + (jsonPostInfo["object_id"] != null ? jsonPostInfo["object_id"].ToString() : string.Empty);
+                            data += delimiter + (jsonPostInfo["created_time"] != null ? jsonPostInfo["created_time"].ToString() : string.Empty);
+                            data += delimiter + (jsonPostInfo["updated_time"] != null ? jsonPostInfo["updated_time"].ToString() : string.Empty);
+                            data += delimiter + ((jsonPostInfo["shares"] != null && (jsonPostInfo["shares"])["count"] != null) ? (jsonPostInfo["shares"])["count"].ToString() : string.Empty);
+                            data += delimiter + ((jsonPostInfo["likes"] != null && (jsonPostInfo["likes"])["data"] != null) ? (getCantidadLikes(jsonPostInfo["id"].ToString(), accessToken, (JObject)jsonPostInfo["likes"])) : string.Empty);
+                            data += delimiter + string.Empty;
+
+                            //(jsonPostInfo["likes"])["data"]
+                            //jsonPostInfo["likes"] != null && (jsonPostInfo["likes"])["data"] != null
+
+                            sb.AppendLine(data);
+                        }
                     }
                 }
+                else
+                {
+                    sb.Clear();
+                    sb.AppendLine("ERROR");
+                    sb.AppendLine("Ocurrió un error al generar el token de acceso. Token de acceso: " + accessToken);
+                }
             }
-            else
+            catch (Exception ex)
             {
                 sb.Clear();
                 sb.AppendLine("ERROR");
-                sb.AppendLine("Ocurrió un error al generar el token de acceso. Token de acceso: " + accessToken);
+                sb.AppendLine("Ocurrió un error al invocar el servicio.");
+                sb.AppendLine("Error");
+                sb.AppendLine("----------------------------------------");
+                sb.AppendLine(ex.Message);
             }
-
             return sb.ToString();
         }
 
