@@ -32,5 +32,19 @@ namespace ElComFBConnector
             WebOperationContext.Current.OutgoingResponse.ContentType = "text/plain";
             return new MemoryStream(Encoding.Default.GetBytes(fbConn.getPosts(Id,sinceDate,untilDate)));
         }
+
+        public Stream GetCommentsRaw(string objectId)
+        {
+            FBConnector fbConn = new FBConnector();
+            WebOperationContext.Current.OutgoingResponse.ContentType = "text/plain";
+            return new MemoryStream(Encoding.Default.GetBytes(fbConn.getComments(objectId)));
+        }
+
+        public Stream GetLikesRaw(string objectId)
+        {
+            FBConnector fbConn = new FBConnector();
+            WebOperationContext.Current.OutgoingResponse.ContentType = "text/plain";
+            return new MemoryStream(Encoding.Default.GetBytes(fbConn.getLikes(objectId)));
+        }
     }
 }

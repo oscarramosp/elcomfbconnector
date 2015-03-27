@@ -24,5 +24,13 @@ namespace ElComFBConnector
         [OperationContract]
         [WebGet]
         Stream GetPostsRaw(string Id, string sinceDate, string untilDate);
+
+        [OperationContract]
+        [WebGet]
+        Stream GetCommentsRaw(string objectId);
+
+        [OperationContract]
+        [WebGet]
+        Stream GetLikesRaw(string objectId);
     }
 }

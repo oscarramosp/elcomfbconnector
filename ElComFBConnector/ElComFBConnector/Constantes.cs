@@ -2,24 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Configuration;
 
 namespace ElComFBConnector
 {
     public class Constantes
     {
-        //Fijos, a migrar al app config
-        //public const string AppID = "884427038267146";
-        //public const string AppSecret = "0a60d73f092c689208699724f8b0933d";
-        //public const string delimiter = "|";
+        //public const string ApiBaseUrl = "https://graph.facebook.com/v2.2/";
+        //public const string ApiBaseUrlUnversioned = "https://graph.facebook.com/";
 
-        public const string ApiBaseUrl = "https://graph.facebook.com/v2.2/";
-        public const string ApiBaseUrlUnversioned = "https://graph.facebook.com/";
+        public static string ApiBaseUrl = ConfigurationManager.AppSettings["ApiBaseUrl"].ToString();
+        public static string ApiBaseUrlUnversioned = ConfigurationManager.AppSettings["ApiBaseUrlUnversioned"].ToString();
 
-        public const string Likes = "likes";
-        public const string Comments = "comments";
-
-
-        //Datos para pruebas
-        //public const string comercioFBId = "71263708835";
+        public static string Likes = ConfigurationManager.AppSettings["likes"].ToString();
+        public static string Comments = ConfigurationManager.AppSettings["comments"].ToString();
+        public static string Posts = ConfigurationManager.AppSettings["posts"].ToString();
     }
 }
